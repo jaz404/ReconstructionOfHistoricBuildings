@@ -1,7 +1,8 @@
 import cv2
 import matplotlib.pyplot as plt
 
-img_path = r"..\..\data\frames\engine1\frame_00000.png"
+img_path = r"..\..\data\frames\csc\frame_00000.png"
+FILTER_KP = True
 
 img = cv2.imread(img_path)
 if img is None:
@@ -33,14 +34,15 @@ for ax, s in zip(axes, settings):
     )
 
     keypoints, descriptors = sift.detectAndCompute(gray, None)
+    if FILTER_KP:
+        min_size = 10  # try values like 8, 10, 12, 15
 
-    min_size = 10  # try values like 8, 10, 12, 15
-
-    filtered_kp = [kp for kp in keypoints if kp.size >= min_size]
+        filtered_kp = [kp for kp in keypoints if kp.size >= min_size]
+        keypoints = filtered_kp
     
     out = cv2.drawKeypoints(
         img,
-        filtered_kp,
+        keypoints,
         None,
         flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
     )
