@@ -10,12 +10,36 @@ def load_image(path):
     return img  # keep as BGR internally
 
 
-def compute_sift_matches(img1_bgr, img2_bgr, sift_params=None, ratio_thresh=0.75, min_size=None):
+def preprocess_gray(gray, use_clahe=False, use_blur=False):
+    out = gray.copy()
+
+    if use_clahe:
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        out = clahe.apply(out)
+
+    if use_blur:
+        out = cv2.GaussianBlur(out, (3, 3), 0)
+
+    return out
+
+
+def compute_sift_matches(
+    img1_bgr,
+    img2_bgr,
+    sift_params=None,
+    ratio_thresh=0.75,
+    min_size=None,
+    use_clahe=False,
+    use_blur=False
+):
     if sift_params is None:
         sift_params = {}
 
     gray1 = cv2.cvtColor(img1_bgr, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img2_bgr, cv2.COLOR_BGR2GRAY)
+
+    gray1 = preprocess_gray(gray1, use_clahe=use_clahe, use_blur=use_blur)
+    gray2 = preprocess_gray(gray2, use_clahe=use_clahe, use_blur=use_blur)
 
     sift = cv2.SIFT_create(**sift_params)
 
@@ -52,6 +76,7 @@ def compute_sift_matches(img1_bgr, img2_bgr, sift_params=None, ratio_thresh=0.75
 
     return kp1, kp2, good, len(good)
 
+
 def ransac_filter(kp1, kp2, matches):
     if len(matches) < 8:
         return [], None
@@ -77,13 +102,13 @@ def ransac_filter(kp1, kp2, matches):
 
 
 def draw_match_image(img1_bgr, img2_bgr, kp1, kp2, matches, max_draw=200):
-    matches_to_draw = matches[:max_draw]
+    # matches_to_draw = matches[:max_draw]
+    matches_to_draw = matches
 
     vis = cv2.drawMatches(
         img1_bgr, kp1,
         img2_bgr, kp2,
-        # matches_to_draw,
-        matches,
+        matches_to_draw,
         None,
         flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
     )
@@ -97,13 +122,59 @@ def compare_sift_settings(img_path1, img_path2):
     img2 = load_image(img_path2)
 
     settings = [
-        {"name": "Default",              "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.04, "edgeThreshold": 10, "sigma": 1.6},
-        {"name": "Fewer features",       "nfeatures": 500,  "nOctaveLayers": 3, "contrastThreshold": 0.04, "edgeThreshold": 10, "sigma": 1.6},
-        {"name": "Higher contrast thr",  "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.08, "edgeThreshold": 10, "sigma": 1.6},
-        {"name": "More edge responses",    "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.04, "edgeThreshold": 20, "sigma": 1.6},
+        # {
+        #     "name": "Default",
+        #     "nfeatures": 0, "nOctaveLayers": 3, "contrastThreshold": 0.04,
+        #     "edgeThreshold": 10, "sigma": 1.6,
+        #     "clahe": False, "blur": False
+        # },
+        # {
+        #     "name": "Fewer features",
+        #     "nfeatures": 500, "nOctaveLayers": 3, "contrastThreshold": 0.04,
+        #     "edgeThreshold": 10, "sigma": 1.6,
+        #     "clahe": False, "blur": False
+        # },
+        # {
+        #     "name": "More edge responses",
+        #     "nfeatures": 0, "nOctaveLayers": 3, "contrastThreshold": 0.04,
+        #     "edgeThreshold": 20, "sigma": 1.6,
+        #     "clahe": False, "blur": False
+        # },
+        # {
+        #     "name": "edge + lower contrast",
+        #     "nfeatures": 0, "nOctaveLayers": 3, "contrastThreshold": 0.02,
+        #     "edgeThreshold": 25, "sigma": 1.6,
+        #     "clahe": False, "blur": False
+        # },
+
+        # Added CLAHE variants
+        {
+            "name": "CLAHE + low contrast",
+            "nfeatures": 0, "nOctaveLayers": 3, "contrastThreshold": 0.02,
+            "edgeThreshold": 10, "sigma": 1.6,
+            "clahe": True, "blur": False
+        },
+        {
+            "name": "CLAHE + very low contrast",
+            "nfeatures": 0, "nOctaveLayers": 3, "contrastThreshold": 0.01,
+            "edgeThreshold": 10, "sigma": 1.6,
+            "clahe": True, "blur": False
+        },
+        {
+            "name": "CLAHE + edge + low contrast",
+            "nfeatures": 0, "nOctaveLayers": 3, "contrastThreshold": 0.01,
+            "edgeThreshold": 20, "sigma": 1.6,
+            "clahe": True, "blur": False
+        },
+        {
+            "name": "CLAHE + blur + edge",
+            "nfeatures": 0, "nOctaveLayers": 3, "contrastThreshold": 0.01,
+            "edgeThreshold": 20, "sigma": 1.6,
+            "clahe": True, "blur": True
+        },
     ]
 
-    fig, axes = plt.subplots(2, 2, figsize=(20, 12))
+    fig, axes = plt.subplots(2, 2, figsize=(24, 12))
     axes = axes.ravel()
 
     for ax, setting in zip(axes, settings):
@@ -116,22 +187,39 @@ def compare_sift_settings(img_path1, img_path2):
         }
 
         kp1, kp2, good_matches, num_good = compute_sift_matches(
-            img1, img2, sift_params=sift_params,    
-            # min_size=15
+            img1,
+            img2,
+            sift_params=sift_params,
+            ratio_thresh=0.75,
+            min_size=None,  # try e.g. 10 or 15 if needed
+            use_clahe=setting["clahe"],
+            use_blur=setting["blur"]
         )
 
         inliers, _ = ransac_filter(kp1, kp2, good_matches)
         num_inliers = len(inliers)
 
-        vis = draw_match_image(img1, img2, kp1, kp2, inliers, max_draw=200)
+        # vis = draw_match_image(img1, img2, kp1, kp2, inliers, max_draw=200)
+        vis = draw_match_image(img1, img2, kp1, kp2, inliers)
+
+        extra = []
+        if setting["clahe"]:
+            extra.append("CLAHE")
+        if setting["blur"]:
+            extra.append("Blur")
+
+        subtitle = f'\n{", ".join(extra)}' if extra else ""
 
         ax.imshow(vis)
         ax.set_title(
-            f'{setting["name"]}\n'
+            f'{setting["name"]}{subtitle}\n'
             f'Lowe matches: {num_good} | RANSAC inliers: {num_inliers}',
             fontsize=11
         )
         ax.axis("off")
+
+    for i in range(len(settings), len(axes)):
+        axes[i].axis("off")
 
     plt.tight_layout()
     plt.show()
@@ -139,6 +227,6 @@ def compare_sift_settings(img_path1, img_path2):
 
 if __name__ == "__main__":
     compare_sift_settings(
-        "../../data/frames/engine1/frame_00001.png",
-        "../../data/frames/engine1/frame_00002.png"
+        "../../data/frames/csc_frontface/frame_00001.png",
+        "../../data/frames/csc_frontface/frame_00002.png"
     )

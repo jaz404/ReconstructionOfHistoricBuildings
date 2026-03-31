@@ -12,14 +12,8 @@ Example usage:
         --max_width 1920 \
         --blur_threshold 120.0
 
-    python preprocess_video.py \
-        --video building.mp4 \
-        --out_dir frames_building \
-        --frame_stride 15 \
-        --scale 0.25 \
-        --keep_blurry
+        python preprocess_video.py --video ../data/csc.mp4 --out_dir ../data/frames/csc_5fps --target_fps 5 --max_width 1920
 """
-
 from __future__ import annotations
 
 import argparse

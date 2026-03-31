@@ -1,8 +1,8 @@
 import cv2
 import matplotlib.pyplot as plt
 
-img_path = r"..\..\data\frames\csc\frame_00000.png"
-FILTER_KP = True
+img_path = r"..\..\data\frames\csc_frontface\frame_00072.png"
+FILTER_KP = False
 
 img = cv2.imread(img_path)
 if img is None:
@@ -18,7 +18,7 @@ settings = [
     {"name": "Lower contrast thr",     "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.02, "edgeThreshold": 10, "sigma": 1.6},
     {"name": "Stricter edge filter",   "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.04, "edgeThreshold": 5,  "sigma": 1.6},
     {"name": "More edge responses",    "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.04, "edgeThreshold": 15, "sigma": 1.6},
-    {"name": "More smoothing",         "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.04, "edgeThreshold": 10, "sigma": 2.0},
+    {"name": "edge + lower contrast",  "nfeatures": 0,    "nOctaveLayers": 3, "contrastThreshold": 0.02, "edgeThreshold": 25, "sigma": 1.6},
 ]
 
 fig, axes = plt.subplots(2, 4, figsize=(22, 11))
