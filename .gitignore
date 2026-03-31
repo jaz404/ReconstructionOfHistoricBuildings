@@ -1,3 +1,7 @@
 *test*.py
 images/
 .DS_Store
+another_mapper.py
+*.zip
+*.mp4
+sparse/

@@ -2,8 +2,8 @@ import pycolmap
 from pathlib import Path
 
 def main():
-    db_path = "databases/colmap_data_max.db"
-    image_dir = "images/engine1"
+    db_path = "databases/csc_front.db"
+    image_dir = "images/csc_front"
     output_dir = Path("sparse/0")
     output_dir.mkdir(parents=True, exist_ok=True)
     
@@ -41,11 +41,19 @@ def main():
     # Assuming 'reconstruction' is the object from Model 1
     # This usually lives in reconstructions[1] based on your log
     if reconstructions:
-        model_0 = reconstructions[0] 
+        for i in range(len(reconstructions)):
+            model = reconstructions[i]
+            model.export_PLY(f"sparse/0/{i}/model.ply")
+            print(f"[SUCCESS] Exported model.ply to sparse/0/{i}/")
+
+
+        # model_0 = reconstructions[1] 
         
-        # Export to PLY for 3dviewer.net
-        model_0.export_PLY("sparse/0/0/model.ply")
-        print("[SUCCESS] Exported model.ply to sparse/0/0/")
+        # # Export to PLY for 3dviewer.net
+        # model_0.export_PLY("sparse/0/1/model.ply")
+        # print("[SUCCESS] Exported model.ply to sparse/0/1/")
 
 if __name__ == "__main__":
     main()
+
+# W20260330 18:36:50.839634 0x20980f100 levenberg_marquardt_strategy.cc:123] Linear solver failure. Failed to compute a step: Eigen failure. Unable to perform dense Cholesky factorization.
