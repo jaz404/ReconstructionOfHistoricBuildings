@@ -1,12 +1,14 @@
+import argparse
 import pickle
 import numpy as np
 from pathlib import Path
 from database import COLMAPDatabase
 
 def main():
-    db_path = "databases/csc_front.db"
-    pickle_path = "data_pkl/csc_front.pkl"
-    
+    args = parse_args()
+    db_path = args.db
+    pickle_path = args.pkl
+
     # Check if data exists
     if not Path(pickle_path).exists():
         print(f"[ERROR] Could not find {pickle_path}")
@@ -28,16 +30,18 @@ def main():
     print(f"[INFO] Created new COLMAP database at {db_path}")
     
     # CAMERA MODEL FIX: 
-    # Model 1 = PINHOLE (Required for Gaussian Splatting)
-    # radially corrected the mobile cam.(2)
-    # TODO: Update width/height and focal length params
-
     width, height = 1920, 1080
-    focal_length = 1500.0  # in pixels
+    if args.is_potrait:
+        width, height = height, width
+    focal_length = args.f
     cx, cy = width / 2, height / 2
 
-    cam_id = db.add_camera(model=1, width=width, height=height, params=[focal_length, focal_length, cx, cy])
-    print(f"[INFO] Registered Camera ID: {cam_id}")
+    cam_id = db.add_camera(
+        model=4, 
+        width=width, 
+        height=height, 
+        params=[focal_length, focal_length, cx, cy, 0.0, 0.0, 0.0, 0.0]
+    )
 
     print(f"[INFO] Loading feature data from {pickle_path}...")
     with open(pickle_path, "rb") as f:
@@ -80,6 +84,15 @@ def main():
     # Save and close
     db.commit()
     print("[SUCCESS] Database injection complete! Ready for COLMAP mapper.")
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--pkl", type=str, required=True)
+    parser.add_argument("--db", type=str, required=True)
+    parser.add_argument("--f", type=float, required=True)  # TODO: Update with actual focal length
+    parser.add_argument("--is_potrait", type=int, default=0)
+
+    return parser.parse_args()
 
 if __name__ == "__main__":
     main()

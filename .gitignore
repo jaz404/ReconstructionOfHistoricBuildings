@@ -5,3 +5,6 @@ another_mapper.py
 *.zip
 *.mp4
 sparse/
+clahe_sequential.py
+*.ipynb
+ply2splat_code.py
