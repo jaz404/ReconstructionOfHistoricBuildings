@@ -225,7 +225,7 @@ def main() -> None:
                 continue
 
             examined_count += 1
-
+            
             if (new_w, new_h) != (orig_width, orig_height):
                 frame = cv2.resize(frame, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
