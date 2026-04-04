@@ -1,10 +1,15 @@
 *test*.py
 images/
 .DS_Store
-another_mapper.py
+
 *.zip
 *.mp4
 sparse/
-clahe_sequential.py
+
 *.ipynb
 ply2splat_code.py
+
+cleaned_sparse/*
+data_pkl/*
+databases/*
+undistorted/*
