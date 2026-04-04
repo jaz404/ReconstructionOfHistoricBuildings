@@ -74,8 +74,8 @@ def main():
     match_count = 0
     # Outer loop: The "source" image
     for i in range(len(images)):
-        if i in range(314, 320):
-            window_size = window_size + 8
+        # if i in range(314, 320):
+        #     window_size = window_size + 8
         # Inner loop: Match against the next 'N' images in the sequence
         for j in range(i + 1, min(i + window_size + 1, len(images))):
             name1, name2 = images[i].name, images[j].name
