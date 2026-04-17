@@ -2,6 +2,7 @@
 
 This repository contains an end-to-end photogrammetry pipeline designed to transition unconstrained mobile video into highly accurate 3D representations. It acts as a robust front-end for 3D Gaussian Splatting (3DGS) and Multi-View Stereo (MVS) by overcoming the inherent brittleness of sequential video tracking and automating the pruning of geometric artifacts (the "Floater Problem").
 
+## View the report: [Final Project Paper](assets/CMPUT428_Final_Project_Paper_Reconstruction_of_Structures.pdf)
 
 ## Repository Structure
 Based on the execution pipeline, the workspace is organized as follows:
